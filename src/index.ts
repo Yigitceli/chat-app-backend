@@ -2,6 +2,7 @@ import express, { Application } from "express";
 import cors from "cors";
 import "dotenv/config";
 import cookieParser from "cookie-parser";
+import mongoose from "mongoose";
 
 const app: Application = express();
 
@@ -15,5 +16,8 @@ app.get("/", (req, res, next) => {
 });
 
 app.listen(5000, (): void => {
-  console.log("Server listening at 5000 Port");
+  mongoose.connect(`${process.env.DATABASE_URL}`).then(() => {
+    console.log("Server listening at 5000 Port");
+    console.log("MongoDB Connected!");
+  });
 });
