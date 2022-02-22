@@ -1,5 +1,6 @@
 import express from "express";
 import UserModel from "../schema/user.schema";
+import bcrypt from "bcrypt";
 
 const router = express.Router();
 
@@ -23,27 +24,28 @@ router.post("/register", async (req, res, next) => {
 
   try {
     if (!email || !password || !name || !surname) {
-      
       return res.status(404).json({ msg: "Invalid Inputs" });
     }
 
-    if (!emailRegEx.test(email) || !passwordRegEx.test(password)) {      
+    if (!emailRegEx.test(email) || !passwordRegEx.test(password)) {
       return res.status(406).json({ msg: "Invalid Inputs" });
     }
 
-    const displayName = name + " " + surname;
+    bcrypt.hash(password, 10, async function (err, hash: string) {
+      const displayName = name + " " + surname;
 
-    const newUser = new UserModel({
-      displayName: displayName,
-      email: email,
-      password: password,
-      avatar: avatar,
-      authType: authType,
+      const newUser = new UserModel({
+        displayName: displayName,
+        email: email,
+        password: hash,
+        avatar: avatar,
+        authType: authType,
+      });
+      await newUser.save();
+      return res.status(200).json({ msg: "Registered!", payload: newUser });
+
+      // Store hash in your password DB.
     });
-
-    await newUser.save();
-
-    return res.status(200).json({ msg: "Registered!", payload: newUser });
   } catch (error) {
     return res.status(500).send("Something gone wrong!");
   }
