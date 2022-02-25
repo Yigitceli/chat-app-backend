@@ -4,9 +4,16 @@ import "dotenv/config";
 import cookieParser from "cookie-parser";
 import mongoose from "mongoose";
 import userRouter from "./routes/user";
-
+import { credential, ServiceAccount } from "firebase-admin";
+import { initializeApp } from "firebase-admin/app";
+import firebaseConfig from "./firebaseConfig.json";
+import morgan from "morgan";
 const app: Application = express();
 
+initializeApp({
+  credential: credential.cert(<ServiceAccount>firebaseConfig),
+});
+app.use(morgan("dev"));
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
