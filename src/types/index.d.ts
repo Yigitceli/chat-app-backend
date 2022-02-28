@@ -13,3 +13,9 @@ export interface ICustomUser {
 export interface RequestCustom extends Request {
   user?: ICustomUser;
 }
+
+export interface IPersonChat{
+  user: ICustomUser,
+  chat: string,
+  createdAt: Date
+}
