@@ -32,7 +32,7 @@ interface ICustomUser {
   password?: string;
   authType: string;
   avatar?: string;
-  friends?: ICustomUser[];
+  friends: ICustomUser[];
   userId: string;
 }
 
@@ -52,6 +52,33 @@ router.get("/", verifyToken, async (req: RequestCustom, res, next) => {
     return res.status(500).json({ msg: "Something gone wrong" });
   }
 });
+
+router.put(
+  "/add-friend",
+  verifyToken,
+  async (req: RequestCustom, res, next) => {
+    const user: ICustomUser | undefined = req.user;
+    const friend: ICustomUser = req.body;
+
+    try {
+      const userCheck: ICustomUser | null = await UserModel.findOne({
+        userId: user?.userId,
+      });
+
+      if (!userCheck?.friends.some((item) => item.userId == friend.userId)) {
+        const User = await UserModel.findOneAndUpdate(
+          { userId: user?.userId },
+          { $push: { friends: friend } }
+        );
+        return res.status(200).json({ msg: "Friend added.", payload: User });
+      }
+      return res.status(404).json({ msg: "Can't find user!"});
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ msg: "Something gone wrong" });
+    }
+  }
+);
 
 router.post("/register", async (req, res, next) => {
   let { email, password, name, surname, authType }: IRegisterBody = req.body;
@@ -89,6 +116,7 @@ router.post("/register", async (req, res, next) => {
       password: hashed,
       authType: authType,
       userId: uuid(),
+      friends: [],
     });
 
     await newUser.save();
@@ -130,6 +158,7 @@ router.post("/login", async (req, res, next) => {
         authType: authtype,
         userId: googleUser.uid,
         avatar: googleUser.picture,
+        friends: [],
       });
 
       await user.save();
@@ -161,23 +190,34 @@ router.post("/login", async (req, res, next) => {
         return res.status(406).json({ msg: "Password isn't correct!" });
       }
 
-      const accessToken = jwt.sign({ ...user }, `${process.env.JWT_SECRET}`, {
+      const userToSend: ICustomUser = {
+        email: user.email,
+        userId: user.userId,
+        avatar: user.avatar,
+        displayName: user.displayName,
+        friends: user.friends,
+        authType: user.authType,
+      };
+
+      const accessToken = jwt.sign(userToSend, `${process.env.JWT_SECRET}`, {
         expiresIn: "15m",
       });
 
       const refreshToken = jwt.sign(
-        { ...user },
+        userToSend,
         `${process.env.REFRESH_SECRET}`,
         {
           expiresIn: "90days",
         }
       );
+      console.log(user);
 
       return res.status(200).json({
         msg: "Logged in!",
         payload: { data: user, accessToken, refreshToken },
       });
     } catch (error) {
+      console.log(error);
       return res.status(500).send("Something gone wrong!");
     }
   }

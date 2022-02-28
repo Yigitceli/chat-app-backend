@@ -1,12 +1,12 @@
 import { Request } from "express";
 
-export interface ICustomUser {
+export interface ICustomUser {  
   displayName: string;
   email: string;
   password?: string;
   authType: string;
-  avatar?: string;
-  friends?: ICustomUser[];
+  avatar: string;
+  friends: ICustomUser[];
   userId: string;
 }
 
