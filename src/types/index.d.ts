@@ -5,8 +5,7 @@ export interface ICustomUser {
   email: string;
   password?: string;
   authType: string;
-  avatar: string;
-  friends: ICustomUser[];
+  avatar: string;  
   userId: string;
 }
 

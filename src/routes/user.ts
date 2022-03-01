@@ -32,7 +32,6 @@ interface ICustomUser {
   password?: string;
   authType: string;
   avatar?: string;
-  friends: ICustomUser[];
   userId: string;
 }
 
@@ -53,32 +52,7 @@ router.get("/", verifyToken, async (req: RequestCustom, res, next) => {
   }
 });
 
-router.put(
-  "/add-friend",
-  verifyToken,
-  async (req: RequestCustom, res, next) => {
-    const user: ICustomUser | undefined = req.user;
-    const friend: ICustomUser = req.body;
 
-    try {
-      const userCheck: ICustomUser | null = await UserModel.findOne({
-        userId: user?.userId,
-      });
-
-      if (!userCheck?.friends.some((item) => item.userId == friend.userId)) {
-        const User = await UserModel.findOneAndUpdate(
-          { userId: user?.userId },
-          { $push: { friends: friend } }
-        );
-        return res.status(200).json({ msg: "Friend added.", payload: User });
-      }
-      return res.status(404).json({ msg: "Can't find user!"});
-    } catch (error) {
-      console.log(error);
-      return res.status(500).json({ msg: "Something gone wrong" });
-    }
-  }
-);
 
 router.post("/register", async (req, res, next) => {
   let { email, password, name, surname, authType }: IRegisterBody = req.body;
@@ -115,8 +89,7 @@ router.post("/register", async (req, res, next) => {
       email: email,
       password: hashed,
       authType: authType,
-      userId: uuid(),
-      friends: [],
+      userId: uuid(),      
     });
 
     await newUser.save();
@@ -157,8 +130,7 @@ router.post("/login", async (req, res, next) => {
         email: googleUser.email!,
         authType: authtype,
         userId: googleUser.uid,
-        avatar: googleUser.picture,
-        friends: [],
+        avatar: googleUser.picture,       
       });
 
       await user.save();
@@ -194,8 +166,7 @@ router.post("/login", async (req, res, next) => {
         email: user.email,
         userId: user.userId,
         avatar: user.avatar,
-        displayName: user.displayName,
-        friends: user.friends,
+        displayName: user.displayName,       
         authType: user.authType,
       };
 
