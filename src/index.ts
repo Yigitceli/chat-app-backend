@@ -16,6 +16,10 @@ import {
   ServerToClientEvents,
   SocketData,
 } from "./types/socketTypes";
+import { verifyToken } from "./services/auth";
+import { SENDMESSAGE } from "./controllers/chat";
+import { CustomServerToClientEvents, ICustomUser, IPersonChat } from "./types";
+import { users } from "./socketUsers";
 
 const app: Application = express();
 
@@ -41,18 +45,43 @@ const server = app.listen(5000, (): void => {
     console.log("MongoDB Connected!");
   });
 });
-const io = new socketio.Server<
-  ClientToServerEvents,
-  ServerToClientEvents,
-  InterServerEvents,
-  SocketData
->(server, {
-  cors: {
-    origin: "http://localhost:3000",
-    methods: ["GET", "POST"],
-  },
-});
+
+export const io: socketio.Server<CustomServerToClientEvents> =
+  new socketio.Server<
+    ClientToServerEvents,
+    ServerToClientEvents,
+    InterServerEvents,
+    SocketData
+  >(server, {
+    cors: {
+      origin: "http://localhost:3000",
+      methods: ["GET", "POST"],
+    },
+  });
 
 io.on("connection", (socket: socketio.Socket) => {
-  console.log(socket.connected);
+  socket.on("joined", ({ userId }) => {
+    Object.assign(users, { [userId]: socket.id });
+    socket.emit("joined", { socketId: users[userId] });
+  });
+
+  socket.on(
+    "sendMessage",
+    async ({
+      chatUserId,
+      user,
+      chatText,
+    }: {
+      chatUserId: string;
+      user: ICustomUser;
+      chatText: string;
+    }) => {
+      const newChat = await SENDMESSAGE({ user, chatUserId, chatText });
+      if (users[chatUserId]) {
+        const user1 = <string>users[chatUserId];
+        const user2 = <string>users[user.userId];
+        io.to([user1, user2]).emit("recieveMessage", { newChat });
+      }
+    }
+  );
 });

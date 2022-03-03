@@ -4,7 +4,7 @@ import { ICustomUser, IPersonChat } from "../types";
 import UserModel from "./user.schema";
 const { Schema, model } = mongoose;
 
-interface IChat {
+export interface IChat {
   users: ICustomUser[];
   chats: IPersonChat[];
 }

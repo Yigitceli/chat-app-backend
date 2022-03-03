@@ -1,4 +1,5 @@
 import express, { NextFunction } from "express";
+import { Socket } from "socket.io";
 import ChatModel from "../schema/chat.schema";
 import UserModel from "../schema/user.schema";
 import { verifyToken } from "../services/auth";
@@ -14,7 +15,7 @@ router.get(
     try {
       const chats = await ChatModel.find({
         users: { $elemMatch: { userId: user?.userId } },
-      });      
+      });
       return res
         .status(200)
         .json({ msg: "Chats are successfully fetched!", payload: chats });
@@ -48,6 +49,7 @@ router.put(
             chats: [chatBody],
           });
           await Chat.save();
+          Socket
           return res
             .status(200)
             .json({ msg: "Chat succesfully created!", payload: Chat });
@@ -55,10 +57,10 @@ router.put(
           return res.status(404).json({ msg: "User does not exist!" });
         }
       } else {
-        await chatCheck.update({ $push: { chats: chatBody } });
+        await chatCheck.update({ $push: { chats: chatBody } });             
         return res
           .status(200)
-          .json({ msg: "Chats are successfully fetched!", payload: chatCheck });
+          .json({ msg: "Message Send", payload: chatCheck });
       }
     } catch (error) {
       return res.status(500).json({ msg: "Something gone wrong!" });
