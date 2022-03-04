@@ -77,11 +77,14 @@ io.on("connection", (socket: socketio.Socket) => {
       chatText: string;
     }) => {
       const newChat = await SENDMESSAGE({ user, chatUserId, chatText });
-      if (users[chatUserId]) {
-        const user1 = <string>users[chatUserId];
-        const user2 = <string>users[user.userId];
-        io.to([user1, user2]).emit("recieveMessage", { newChat });
-      }
+
+      const user1 = <string>users[chatUserId];
+      const user2 = <string>users[user.userId];
+      io.to([user1, user2]).emit("recieveMessage", { newChat });
     }
   );
+  socket.on("writting", ({ chatUserId, isWritting }) => {
+    const user = <string>users[chatUserId];    
+    socket.to(user).emit("writting", isWritting);
+  });
 });

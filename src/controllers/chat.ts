@@ -15,6 +15,7 @@ export const SENDMESSAGE = async ({
     const chatCheck = await ChatModel.findOne({
       $and: [{ "users.userId": user.userId }, { "users.userId": chatUserId }],
     });
+
     const chatBody: IPersonChat = {
       user: user!,
       chat: chatText,
@@ -27,14 +28,14 @@ export const SENDMESSAGE = async ({
           users: [user, userData],
           chats: [chatBody],
         });
-        await Chat.save();
+        await Chat.save();        
         return Chat;
       } catch (error) {}
     } else {
       await chatCheck.updateOne({ $push: { chats: chatBody } });
       const newChat = await ChatModel.findOne({
         $and: [{ "users.userId": user.userId }, { "users.userId": chatUserId }],
-      });      
+      });
       return newChat;
     }
   } catch (error) {
