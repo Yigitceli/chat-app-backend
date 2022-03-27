@@ -54,7 +54,7 @@ export const io: socketio.Server<CustomServerToClientEvents> =
     SocketData
   >(server, {
     cors: {
-      origin: "http://localhost:3000",
+      origin: "https://6240f21eb2755d000812e3a3--gilded-marigold-b36edc.netlify.app",
       methods: ["GET", "POST"],
     },
   });
