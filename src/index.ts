@@ -39,7 +39,7 @@ app.get("/", (req, res, next) => {
   res.send(process.env.TEST);
 });
 
-const server = app.listen(5000, (): void => {
+const server = app.listen(process.env.PORT || 5000, (): void => {
   mongoose.connect(`${process.env.DATABASE_URL}`).then(() => {
     console.log("Server listening at 5000 Port");
     console.log("MongoDB Connected!");
